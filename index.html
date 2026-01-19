@@ -1,0 +1,1354 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no" />
+  <title>Pepe Perle Labs Game</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500;700;800;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* =========================
+      THEME TOKENS
+    ========================== */
+    :root{
+      --bg:#070a14;
+      --panel:#0f1730;
+      --panel2:#101a33;
+      --border: rgba(255,255,255,0.12);
+      --text:#eaf0ff;
+      --muted:#a8b3d9;
+      --accent:#7cf7c6;
+      --accent2:#7aa6ff;
+      --danger:#ff6b6b;
+      --warn:#ffd166;
+      --shadow: 0 18px 70px rgba(0,0,0,.55);
+      --radius: 18px;
+      --glass: rgba(16,26,51,0.70);
+      --glass2: rgba(16,26,51,0.88);
+      --topbar: rgba(0,0,0,0.25);
+      --canvasBg:
+        radial-gradient(900px 420px at 25% 10%, rgba(124,247,198,.14), transparent 60%),
+        radial-gradient(700px 380px at 80% 20%, rgba(255,209,102,.10), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0));
+    }
+
+    /* Light Theme */
+    body[data-theme="light"]{
+      --bg:#f6f8ff;
+      --panel:#ffffff;
+      --panel2:#ffffff;
+      --border: rgba(0,0,0,0.10);
+      --text:#0b1020;
+      --muted:#4a587d;
+      --accent:#2ee7a6;
+      --accent2:#2b74ff;
+      --shadow: 0 16px 50px rgba(0,0,0,.12);
+      --glass: rgba(255,255,255,0.86);
+      --glass2: rgba(255,255,255,0.92);
+      --topbar: rgba(255,255,255,0.75);
+      --canvasBg:
+        radial-gradient(900px 420px at 25% 10%, rgba(46,231,166,.20), transparent 60%),
+        radial-gradient(700px 380px at 80% 20%, rgba(43,116,255,.14), transparent 60%),
+        linear-gradient(180deg, rgba(0,0,0,.03), rgba(0,0,0,0));
+    }
+
+    /* Neon Theme */
+    body[data-theme="neon"]{
+      --bg:#04040b;
+      --panel:#0b0b18;
+      --panel2:#0b0b18;
+      --border: rgba(255,255,255,0.14);
+      --text:#f3f7ff;
+      --muted:#a6b1ff;
+      --accent:#7cf7c6;
+      --accent2:#ff6bff;
+      --shadow: 0 20px 80px rgba(0,0,0,.65);
+      --glass: rgba(10,10,26,0.78);
+      --glass2: rgba(10,10,26,0.90);
+      --topbar: rgba(0,0,0,0.30);
+      --canvasBg:
+        radial-gradient(900px 420px at 25% 10%, rgba(255,107,255,.18), transparent 60%),
+        radial-gradient(700px 380px at 80% 20%, rgba(124,247,198,.14), transparent 60%),
+        linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,0));
+    }
+
+    /* =========================
+      BASE
+    ========================== */
+    *{ box-sizing:border-box; }
+    html, body{ height:100%; }
+    body{
+      margin:0;
+      font-family: Inter, system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background:
+        radial-gradient(1100px 600px at 20% 10%, rgba(122,166,255,.20), transparent 60%),
+        radial-gradient(900px 520px at 85% 20%, rgba(124,247,198,.16), transparent 55%),
+        linear-gradient(180deg, #050713, #0b1020);
+      color:var(--text);
+      overflow:hidden;
+    }
+    body[data-theme="light"]{
+      background:
+        radial-gradient(1100px 600px at 20% 10%, rgba(43,116,255,.12), transparent 60%),
+        radial-gradient(900px 520px at 85% 20%, rgba(46,231,166,.12), transparent 55%),
+        linear-gradient(180deg, #f7f9ff, #eef3ff);
+    }
+    body[data-theme="neon"]{
+      background:
+        radial-gradient(1100px 600px at 20% 10%, rgba(255,107,255,.16), transparent 60%),
+        radial-gradient(900px 520px at 85% 20%, rgba(124,247,198,.14), transparent 55%),
+        linear-gradient(180deg, #02020a, #07071a);
+    }
+
+    a{ color:inherit; text-decoration:none; }
+
+    /* =========================
+      SOCIAL LINK WITH AVATAR
+    ========================== */
+    .socialLink{
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    .socialLink img{
+      width:18px;
+      height:18px;
+      border-radius:999px;
+      object-fit:cover;
+      border:1px solid var(--border);
+    }
+
+    /* =========================
+      LAYOUT
+    ========================== */
+    .app{
+      height:100%;
+      display:flex;
+      flex-direction:column;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:12px 14px;
+      background: var(--topbar);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      min-width: 240px;
+    }
+
+    .logoBox{
+      width:40px;
+      height:40px;
+      border-radius:14px;
+      background: rgba(255,255,255,0.08);
+      border:1px solid var(--border);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      overflow:hidden;
+      box-shadow: var(--shadow);
+    }
+    body[data-theme="light"] .logoBox{
+      background: rgba(0,0,0,0.04);
+    }
+    .logoBox img{
+      width:28px;
+      height:28px;
+      object-fit:contain;
+    }
+
+    .brandText{
+      display:flex;
+      flex-direction:column;
+      gap:2px;
+      line-height:1.1;
+    }
+    .brandText b{
+      font-size:13px;
+      font-weight:900;
+      letter-spacing:.2px;
+    }
+    .brandText span{
+      font-size:11px;
+      color:var(--muted);
+    }
+
+    .topActions{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      flex-wrap:wrap;
+      justify-content:flex-end;
+    }
+
+    .pill{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border-radius:999px;
+      background: rgba(255,255,255,0.08);
+      border:1px solid var(--border);
+      font-size:12px;
+      white-space:nowrap;
+    }
+    body[data-theme="light"] .pill{
+      background: rgba(0,0,0,0.04);
+    }
+    .pill b{ font-weight:900; }
+
+    .btn{
+      cursor:pointer;
+      border:none;
+      border-radius:14px;
+      padding:10px 12px;
+      font-weight:900;
+      color:#07121c;
+      background: linear-gradient(180deg, var(--accent), #44e6b0);
+      box-shadow: 0 12px 26px rgba(124,247,198,.18);
+      transition: transform .08s ease;
+      user-select:none;
+      font-size:12px;
+    }
+    .btn:active{ transform: translateY(1px) scale(.99); }
+
+    .btn.secondary{
+      background: rgba(255,255,255,0.10);
+      color: var(--text);
+      border:1px solid var(--border);
+      box-shadow:none;
+    }
+    body[data-theme="light"] .btn.secondary{
+      background: rgba(0,0,0,0.04);
+    }
+
+    .select{
+      border-radius:14px;
+      padding:10px 12px;
+      border:1px solid var(--border);
+      background: rgba(255,255,255,0.10);
+      color: var(--text);
+      font-weight:900;
+      font-size:12px;
+      outline:none;
+    }
+    body[data-theme="light"] .select{
+      background: rgba(0,0,0,0.04);
+    }
+
+    /* Pages container */
+    .pages{
+      flex:1;
+      min-height:0;
+      overflow:auto;
+      padding:12px;
+    }
+
+    .page{
+      display:none;
+      min-height: calc(100% - 0px);
+    }
+    .page.active{
+      display:block;
+    }
+
+    /* =========================
+      HOME PAGE
+    ========================== */
+    .homeGrid{
+      display:grid;
+      grid-template-columns: 1.2fr 0.8fr;
+      gap:12px;
+      min-height: calc(100vh - 160px);
+    }
+    @media (max-width: 1050px){
+      .homeGrid{ grid-template-columns: 1fr; }
+    }
+
+    .card{
+      background: var(--glass);
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .cardInner{
+      padding:14px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+
+    .heroTitle{
+      font-size:28px;
+      font-weight:900;
+      line-height:1.1;
+      margin:0;
+      letter-spacing:-0.5px;
+    }
+    .heroSub{
+      margin:0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.55;
+    }
+
+    .ctaRow{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:6px;
+    }
+
+    .features{
+      display:grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap:10px;
+    }
+    @media (max-width: 900px){
+      .features{ grid-template-columns: 1fr; }
+    }
+
+    .miniCard{
+      padding:12px;
+      border-radius:16px;
+      background: rgba(255,255,255,0.08);
+      border:1px solid var(--border);
+    }
+    body[data-theme="light"] .miniCard{
+      background: rgba(0,0,0,0.03);
+    }
+    .miniCard b{
+      display:block;
+      font-size:12px;
+      margin-bottom:6px;
+      font-weight:900;
+    }
+    .miniCard span{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.35;
+    }
+
+    .communityFeed{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      max-height: 420px;
+      overflow:auto;
+      padding-right:4px;
+    }
+
+    .feedItem{
+      display:flex;
+      gap:10px;
+      padding:12px;
+      border-radius:16px;
+      background: rgba(255,255,255,0.06);
+      border:1px solid var(--border);
+      align-items:flex-start;
+    }
+    body[data-theme="light"] .feedItem{
+      background: rgba(0,0,0,0.03);
+    }
+    .avatar{
+      width:36px;
+      height:36px;
+      border-radius:14px;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      background: rgba(255,255,255,0.10);
+      border:1px solid var(--border);
+      font-weight:900;
+      flex:0 0 auto;
+    }
+    .feedItem b{
+      display:block;
+      font-size:12px;
+      font-weight:900;
+      margin-bottom:4px;
+    }
+    .feedItem span{
+      display:block;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.35;
+    }
+
+    /* =========================
+      PLAY PAGE (FULLSCREEN GAME)
+    ========================== */
+    .playWrap{
+      height: calc(100vh - 170px);
+      min-height: 520px;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    @media (max-width: 1050px){
+      .playWrap{
+        height: calc(100vh - 190px);
+        min-height: 520px;
+      }
+    }
+
+    .gameShell{
+      flex:1;
+      min-height:0;
+      background: var(--glass);
+      border:1px solid var(--border);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+      position:relative;
+    }
+
+    .gameTop{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 12px;
+      border-bottom: 1px solid var(--border);
+      background: rgba(0,0,0,0.12);
+    }
+    body[data-theme="light"] .gameTop{
+      background: rgba(0,0,0,0.03);
+    }
+
+    .gameTopLeft{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+
+    .canvasWrap{
+      position:absolute;
+      inset:54px 0 0 0;
+    }
+
+    canvas{
+      width:100%;
+      height:100%;
+      display:block;
+      background: var(--canvasBg);
+      image-rendering: auto;
+    }
+
+    .overlay{
+      position:absolute;
+      inset:54px 0 0 0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:18px;
+      background: rgba(0,0,0,0.55);
+      backdrop-filter: blur(10px);
+      z-index:20;
+    }
+    .overlay.hidden{ display:none; }
+
+    .modal{
+      width:min(560px, 100%);
+      background: var(--glass2);
+      border:1px solid var(--border);
+      border-radius:22px;
+      box-shadow: 0 24px 90px rgba(0,0,0,.65);
+      padding:16px;
+      text-align:center;
+    }
+
+    .modalTop{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      margin-bottom:10px;
+    }
+    .modalTop img{
+      width:28px;
+      height:28px;
+      object-fit:contain;
+    }
+
+    .modal h2{
+      margin:0;
+      font-size:18px;
+      font-weight:900;
+    }
+    .modal p{
+      margin:10px 0 0;
+      color:var(--muted);
+      font-size:13px;
+      line-height:1.5;
+    }
+
+    .input{
+      width:min(360px, 100%);
+      padding:12px 12px;
+      border-radius:14px;
+      background: rgba(255,255,255,0.08);
+      border:1px solid var(--border);
+      color:var(--text);
+      outline:none;
+      font-weight:800;
+      font-size:13px;
+    }
+    body[data-theme="light"] .input{
+      background: rgba(0,0,0,0.03);
+    }
+    .input::placeholder{ color: rgba(168,179,217,0.75); }
+
+    .row{
+      display:flex;
+      gap:10px;
+      justify-content:center;
+      flex-wrap:wrap;
+      margin-top:14px;
+    }
+
+    .toast{
+      position:absolute;
+      left:50%;
+      top:18px;
+      transform: translateX(-50%);
+      background: var(--glass2);
+      border:1px solid var(--border);
+      border-radius:999px;
+      padding:10px 14px;
+      box-shadow: 0 18px 60px rgba(0,0,0,.55);
+      display:flex;
+      align-items:center;
+      gap:10px;
+      font-weight:900;
+      font-size:12px;
+      z-index:50;
+      opacity:0;
+      pointer-events:none;
+      transition: opacity .18s ease, transform .18s ease;
+    }
+    .toast.show{
+      opacity:1;
+      transform: translateX(-50%) translateY(6px);
+    }
+    .toast small{
+      font-weight:700;
+      color:var(--muted);
+    }
+
+    .mobileControls{
+      position:absolute;
+      left:14px;
+      right:14px;
+      bottom:14px;
+      display:flex;
+      justify-content:space-between;
+      gap:12px;
+      z-index:30;
+      pointer-events:none;
+    }
+
+    .touchBtn{
+      pointer-events:auto;
+      width:84px;
+      height:84px;
+      border-radius:22px;
+      background: rgba(255,255,255,0.10);
+      border:1px solid var(--border);
+      backdrop-filter: blur(10px);
+      box-shadow: 0 18px 60px rgba(0,0,0,.35);
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:26px;
+      user-select:none;
+    }
+    body[data-theme="light"] .touchBtn{
+      background: rgba(0,0,0,0.03);
+    }
+
+    @media (min-width: 1050px){
+      .mobileControls{ display:none; }
+    }
+
+    /* =========================
+      FOOTER (STANDARD)
+    ========================== */
+    .footer{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      padding:12px 14px;
+      background: var(--topbar);
+      border-top: 1px solid var(--border);
+      backdrop-filter: blur(10px);
+      flex-wrap:wrap;
+      font-size:12px;
+      color:var(--muted);
+    }
+    .footerLeft, .footerRight{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      flex-wrap:wrap;
+    }
+    .footer a{
+      color:var(--text);
+      padding:7px 10px;
+      border-radius:999px;
+      background: rgba(255,255,255,0.08);
+      border:1px solid var(--border);
+      font-weight:800;
+    }
+    body[data-theme="light"] .footer a{
+      background: rgba(0,0,0,0.04);
+    }
+  </style>
+</head>
+
+<body data-theme="dark">
+  <div class="app">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div class="brand">
+        <div class="logoBox">
+          <img src="https://i.ibb.co/6bhDKD3/20260110-195312.png" alt="Perle">
+        </div>
+        <div class="brandText">
+          <b>Pepe Perle Labs Game</b>
+          <span>Game Portal • Standard Website • Mobile Friendly</span>
+        </div>
+      </div>
+
+      <div class="topActions">
+        <button class="btn secondary" id="homeNav">🏠 Home</button>
+        <button class="btn" id="playNav">▶ Play</button>
+
+        <!-- PerleLabs twitter with avatar -->
+        <a class="pill socialLink" href="https://x.com/PerleLabs" target="_blank" rel="noopener">
+          <img src="https://i.ibb.co/6bhDKD3/20260110-195312.png" alt="Perle">
+          🐦 @PerleLabs
+        </a>
+
+        <select class="select" id="themeSelect" title="Theme">
+          <option value="dark">🌙 Dark</option>
+          <option value="light">☀ Light</option>
+          <option value="neon">💜 Neon</option>
+        </select>
+
+        <button class="btn secondary" id="soundBtn">🔊 Sound: ON</button>
+        <button class="btn secondary" id="fsBtn">⛶ Fullscreen</button>
+      </div>
+    </div>
+
+    <!-- PAGES -->
+    <div class="pages">
+
+      <!-- HOME PAGE -->
+      <div class="page active" id="homePage">
+        <div class="homeGrid">
+
+          <div class="card">
+            <div class="cardInner">
+              <h1 class="heroTitle">Ship faster. Dodge bugs. Collect Perle coins. 🐸🪙</h1>
+              <p class="heroSub">
+                <b>Pepe Perle Labs Game</b> is a mini arcade runner inspired by builder culture.
+                Tap to jump, avoid bugs, and stack score like a real onchain shipper 😤
+              </p>
+
+              <div class="ctaRow">
+                <button class="btn" id="homePlayBtn">🚀 Play Now</button>
+                <button class="btn secondary" id="homeShareBtn">🐦 Copy X Post</button>
+              </div>
+
+              <div class="features">
+                <div class="miniCard">
+                  <b>🏆 Leaderboard</b>
+                  <span>Local top scores with your username.</span>
+                </div>
+                <div class="miniCard">
+                  <b>🏅 Achievements</b>
+                  <span>Unlock badges while you improve.</span>
+                </div>
+                <div class="miniCard">
+                  <b>🎯 Daily Challenge</b>
+                  <span>New mission every day (keeps it fun).</span>
+                </div>
+              </div>
+
+              <div class="miniCard">
+                <b>🧩 Perle Labs</b>
+                <span>
+                  Perle Labs is building the foundation that makes onchain building easier —
+                  developer tools + infrastructure so builders can ship faster.
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="cardInner">
+              <div style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+                <b style="font-size:13px;">🔥 Community Scores</b>
+                <span style="color:var(--muted); font-size:12px;">(fun feed)</span>
+              </div>
+
+              <div class="communityFeed" id="communityFeed"></div>
+
+              <div class="miniCard">
+                <b>🐦 Follow the builders</b>
+                <span>
+                  Stay updated with Perle Labs and community creators.
+                </span>
+                <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+                  <a class="btn secondary socialLink" style="flex:1; text-align:center;" href="https://x.com/PerleLabs" target="_blank" rel="noopener">
+                    <img src="https://i.ibb.co/6bhDKD3/20260110-195312.png" alt="Perle">
+                    @PerleLabs
+                  </a>
+                  <a class="btn secondary socialLink" style="flex:1; text-align:center;" href="https://x.com/villainxx17" target="_blank" rel="noopener">
+                    <img src="https://i.ibb.co/tTVBRQ2N/20251220-133721.jpg" alt="Adi">
+                    @villainxx17
+                  </a>
+                </div>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- PLAY PAGE -->
+      <div class="page" id="playPage">
+        <div class="playWrap">
+          <div class="gameShell">
+
+            <div class="gameTop">
+              <div class="gameTopLeft">
+                <div class="pill">👤 <b id="playerNameHud">Builder</b></div>
+                <div class="pill">❤️ Lives: <b id="lives">3</b></div>
+                <div class="pill">Score: <b id="score">0</b></div>
+                <div class="pill">Best: <b id="best">0</b></div>
+                <div class="pill">Speed: <b id="speed">1.0x</b></div>
+              </div>
+
+              <div class="gameTopLeft" style="justify-content:flex-end;">
+                <button class="btn" id="startBtn">▶ Start</button>
+                <button class="btn secondary" id="shareBtnTop">🐦 Share</button>
+              </div>
+            </div>
+
+            <div class="canvasWrap">
+              <canvas id="game"></canvas>
+
+              <div class="toast" id="toast">
+                🏅 Achievement Unlocked <small id="toastText"></small>
+              </div>
+
+              <!-- Start overlay -->
+              <div class="overlay" id="startOverlay">
+                <div class="modal">
+                  <div class="modalTop">
+                    <img src="https://i.ibb.co/6bhDKD3/20260110-195312.png" alt="Perle">
+                    <h2>Enter Your Name 🐸</h2>
+                  </div>
+
+                  <p>Leaderboard will show your name. Keep it short and clean 😤</p>
+
+                  <div style="margin-top:12px; display:flex; justify-content:center;">
+                    <input class="input" id="nameInput" placeholder="Example: Adi / Villain / Builder" maxlength="14" />
+                  </div>
+
+                  <div class="row">
+                    <button class="btn" id="playBtn">🚀 Play Now</button>
+                    <button class="btn secondary" id="copyLaunchBtn">🐦 Copy X Launch</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Game over overlay -->
+              <div class="overlay hidden" id="overOverlay">
+                <div class="modal">
+                  <div class="modalTop">
+                    <img src="https://i.ibb.co/6bhDKD3/20260110-195312.png" alt="Perle">
+                    <h2>Run ended 😭</h2>
+                  </div>
+                  <p id="overMsg">AI detected a bug. Patch and retry.</p>
+
+                  <p style="margin-top:10px;">
+                    Final Score: <b id="finalScore">0</b>
+                  </p>
+
+                  <div class="row">
+                    <button class="btn" id="retryBtn">🔁 Retry</button>
+                    <button class="btn secondary" id="shareBtn">🐦 Share Score</button>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Mobile touch controls -->
+              <div class="mobileControls">
+                <div class="touchBtn" id="jumpBtn">⬆</div>
+                <div class="touchBtn" id="pauseBtn">⏸</div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- FOOTER -->
+    <div class="footer">
+      <div class="footerLeft">
+        <span>© <span id="year"></span> Pepe Perle Labs Game</span>
+        <span>•</span>
+        <span>Built for the community</span>
+      </div>
+
+      <div class="footerRight">
+        <a class="socialLink" href="https://x.com/PerleLabs" target="_blank" rel="noopener">
+          <img src="https://i.ibb.co/6bhDKD3/20260110-195312.png" alt="Perle">
+          🐦 @PerleLabs
+        </a>
+
+        <a class="socialLink" href="https://x.com/villainxx17" target="_blank" rel="noopener">
+          <img src="https://i.ibb.co/tTVBRQ2N/20251220-133721.jpg" alt="Adi">
+          🐦 Made by @villainxx17
+        </a>
+      </div>
+    </div>
+
+  </div>
+
+<script>
+(() => {
+  // =========================
+  // PAGE NAV
+  // =========================
+  const homePage = document.getElementById("homePage");
+  const playPage = document.getElementById("playPage");
+  const homeNav = document.getElementById("homeNav");
+  const playNav = document.getElementById("playNav");
+  const homePlayBtn = document.getElementById("homePlayBtn");
+  const homeShareBtn = document.getElementById("homeShareBtn");
+
+  function showPage(which){
+    if (which === "home"){
+      homePage.classList.add("active");
+      playPage.classList.remove("active");
+    } else {
+      playPage.classList.add("active");
+      homePage.classList.remove("active");
+    }
+  }
+
+  homeNav.addEventListener("click", ()=> showPage("home"));
+  playNav.addEventListener("click", ()=> showPage("play"));
+  homePlayBtn.addEventListener("click", ()=> showPage("play"));
+
+  // Footer year
+  document.getElementById("year").textContent = new Date().getFullYear();
+
+  // =========================
+  // THEME SWITCHER
+  // =========================
+  const THEME_KEY = "pepe_perle_theme_v2";
+  const themeSelect = document.getElementById("themeSelect");
+
+  function setTheme(t){
+    document.body.setAttribute("data-theme", t);
+    localStorage.setItem(THEME_KEY, t);
+    themeSelect.value = t;
+  }
+  setTheme(localStorage.getItem(THEME_KEY) || "dark");
+  themeSelect.addEventListener("change", (e)=> setTheme(e.target.value));
+
+  // =========================
+  // COMMUNITY FEED (FAKE BUT COOL)
+  // =========================
+  const feed = document.getElementById("communityFeed");
+  const FEED_ITEMS = [
+    { name:"BuilderX", score: 210, msg:"Clean run. No bugs touched 😤" },
+    { name:"PepeShipper", score: 160, msg:"Perle coins stacked. Shipping mode ON." },
+    { name:"OnchainDev", score: 130, msg:"Daily challenge completed ✅" },
+    { name:"FrogCoder", score: 90, msg:"I jumped too early 😭 retrying." },
+    { name:"InfraGuy", score: 240, msg:"Bug dodged. Tools shipped. W." },
+  ];
+
+  function renderFeed(){
+    feed.innerHTML = "";
+    FEED_ITEMS.forEach((x)=>{
+      const div = document.createElement("div");
+      div.className = "feedItem";
+      div.innerHTML = `
+        <div class="avatar">${x.name.slice(0,1).toUpperCase()}</div>
+        <div>
+          <b>${x.name} • Score ${x.score}</b>
+          <span>${x.msg}</span>
+        </div>
+      `;
+      feed.appendChild(div);
+    });
+  }
+  renderFeed();
+
+  // =========================
+  // SHARE TEXT
+  // =========================
+  function shareText(s){
+    return `I scored ${s} in Pepe Perle Labs Game 🐸🪙\nPerle coins collected. Bugs dodged. Still shipping 😤\n@PerleLabs #PerleLabs #OnchainBuilders`;
+  }
+  async function copyToClipboard(text) {
+    try{
+      await navigator.clipboard.writeText(text);
+      alert("Copied! Paste it on X 🐦🔥");
+    }catch(e){
+      prompt("Copy this text:", text);
+    }
+  }
+
+  homeShareBtn.addEventListener("click", () => {
+    const txt =
+`I just played Pepe Perle Labs Game 🐸🪙
+Collect Perle coins, dodge bugs, ship faster 😤
+
+Try it + drop your score 👇
+@PerleLabs #PerleLabs #OnchainBuilders`;
+    copyToClipboard(txt);
+  });
+
+  // =========================
+  // GAME CODE
+  // =========================
+  const canvas = document.getElementById("game");
+  const ctx = canvas.getContext("2d");
+
+  function resizeCanvas(){
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    canvas.width = Math.floor(canvas.clientWidth * dpr);
+    canvas.height = Math.floor(canvas.clientHeight * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  window.addEventListener("resize", resizeCanvas);
+
+  // UI
+  const scoreEl = document.getElementById("score");
+  const bestEl  = document.getElementById("best");
+  const speedEl = document.getElementById("speed");
+  const livesEl = document.getElementById("lives");
+  const playerNameHud = document.getElementById("playerNameHud");
+
+  const startBtn = document.getElementById("startBtn");
+  const playBtn = document.getElementById("playBtn");
+  const retryBtn = document.getElementById("retryBtn");
+  const shareBtn = document.getElementById("shareBtn");
+  const shareBtnTop = document.getElementById("shareBtnTop");
+
+  const startOverlay = document.getElementById("startOverlay");
+  const overOverlay = document.getElementById("overOverlay");
+  const finalScoreEl = document.getElementById("finalScore");
+  const overMsgEl = document.getElementById("overMsg");
+
+  const jumpBtn = document.getElementById("jumpBtn");
+  const pauseBtn = document.getElementById("pauseBtn");
+
+  const soundBtn = document.getElementById("soundBtn");
+  const fsBtn = document.getElementById("fsBtn");
+  const copyLaunchBtn = document.getElementById("copyLaunchBtn");
+
+  const nameInput = document.getElementById("nameInput");
+
+  const toast = document.getElementById("toast");
+  const toastText = document.getElementById("toastText");
+
+  // Images
+  const pepeImg = new Image();
+  pepeImg.src = "https://i.ibb.co/Pvk0JYjZ/are-you-ready-pepe-people-pepe-the-crypto-nft-pepe-the-frog-v0-qhthxtte6uwa1.jpg";
+
+  const perleImg = new Image();
+  perleImg.src = "https://i.ibb.co/6bhDKD3/20260110-195312.png";
+
+  const bugImg = new Image();
+  bugImg.src = "https://i.ibb.co/whX2h9Rd/1e26b64870dbf013669085c7aa884c28.jpg";
+
+  // Sound
+  let soundOn = true;
+  const beep = (freq=440, dur=0.05) => {
+    if (!soundOn) return;
+    try {
+      const ac = new (window.AudioContext || window.webkitAudioContext)();
+      const o = ac.createOscillator();
+      const g = ac.createGain();
+      o.type = "sine";
+      o.frequency.value = freq;
+      g.gain.value = 0.06;
+      o.connect(g);
+      g.connect(ac.destination);
+      o.start();
+      setTimeout(() => { o.stop(); ac.close(); }, dur * 1000);
+    } catch(e) {}
+  };
+
+  soundBtn.addEventListener("click", () => {
+    soundOn = !soundOn;
+    soundBtn.textContent = soundOn ? "🔊 Sound: ON" : "🔇 Sound: OFF";
+  });
+
+  // Fullscreen
+  fsBtn.addEventListener("click", async () => {
+    try{
+      if (!document.fullscreenElement) {
+        await document.documentElement.requestFullscreen();
+      } else {
+        await document.exitFullscreen();
+      }
+    }catch(e){}
+  });
+
+  // Username
+  const NAME_KEY = "pepe_perle_name_v3";
+  function sanitizeName(n){
+    n = (n || "").trim();
+    if (!n) return "Builder";
+    n = n.replace(/[^a-zA-Z0-9_ ]/g, "");
+    if (n.length > 14) n = n.slice(0, 14);
+    return n || "Builder";
+  }
+  function getName(){
+    return sanitizeName(localStorage.getItem(NAME_KEY) || "Builder");
+  }
+  function setName(n){
+    const s = sanitizeName(n);
+    localStorage.setItem(NAME_KEY, s);
+    playerNameHud.textContent = s;
+  }
+
+  // Achievements
+  const ACH_KEY = "pepe_perle_ach_v3";
+  const ACH_LIST = [
+    { id:"score50",  title:"Score 50",  check: (best)=> best >= 50 },
+    { id:"score150", title:"Score 150", check: (best)=> best >= 150 },
+    { id:"score300", title:"Score 300", check: (best)=> best >= 300 },
+  ];
+  function loadAch(){ try{ return JSON.parse(localStorage.getItem(ACH_KEY) || "[]"); }catch(e){ return []; } }
+  function saveAch(a){ localStorage.setItem(ACH_KEY, JSON.stringify(a)); }
+  function hasAch(id){ return loadAch().includes(id); }
+  function showToast(text){
+    toastText.textContent = "• " + text;
+    toast.classList.add("show");
+    beep(920, 0.06);
+    setTimeout(()=> toast.classList.remove("show"), 1400);
+  }
+  function unlockAch(id, title){
+    const a = loadAch();
+    if (a.includes(id)) return;
+    a.push(id);
+    saveAch(a);
+    showToast(title);
+  }
+
+  // Daily Challenge
+  const CH_KEY = "pepe_perle_daily_v3";
+  const CH_DONE_KEY = "pepe_perle_daily_done_v3";
+  const CHALLENGES = [
+    { id:"score80", title:"Score 80 Today", type:"score", target:80 },
+    { id:"score140", title:"Score 140 Today", type:"score", target:140 },
+  ];
+  function todayKey(){
+    const d = new Date();
+    return `${d.getFullYear()}-${d.getMonth()+1}-${d.getDate()}`;
+  }
+  function getDaily(){
+    const key = todayKey();
+    const stored = localStorage.getItem(CH_KEY);
+    if (stored){
+      try{
+        const obj = JSON.parse(stored);
+        if (obj.key === key) return obj.ch;
+      }catch(e){}
+    }
+    const seed = key.split("-").join("");
+    let n=0; for (let i=0;i<seed.length;i++) n += seed.charCodeAt(i);
+    const ch = CHALLENGES[n % CHALLENGES.length];
+    localStorage.setItem(CH_KEY, JSON.stringify({ key, ch }));
+    localStorage.removeItem(CH_DONE_KEY);
+    return ch;
+  }
+  function dailyDone(){ return localStorage.getItem(CH_DONE_KEY) === todayKey(); }
+  function markDailyDone(){ localStorage.setItem(CH_DONE_KEY, todayKey()); }
+
+  // Game state
+  let running=false, paused=false;
+  let score=0;
+  let best=Number(localStorage.getItem("pepe_perle_best_v3") || 0);
+  let lives=3;
+
+  const bugs=[], coins=[], particles=[];
+  let tBug=0, tCoin=0, tParticle=0;
+  let lastTime=performance.now();
+
+  const player = { x:120, y:0, w:62, h:62, vy:0, onGround:true };
+
+  function rand(a,b){ return Math.random()*(b-a)+a; }
+  function rectHit(a,b){
+    return a.x < b.x+b.w && a.x+a.w > b.x && a.y < b.y+b.h && a.y+a.h > b.y;
+  }
+  function hitPlayerWithBug(p, b){
+    const padX=18, padY=14;
+    const ax=p.x+padX, ay=p.y+padY, aw=p.w-padX*2, ah=p.h-padY*2;
+    return ax < b.x+b.w && ax+aw > b.x && ay < b.y+b.h && ay+ah > b.y;
+  }
+
+  function reset(){
+    score=0; lives=3;
+    bugs.length=0; coins.length=0; particles.length=0;
+    tBug=0; tCoin=0; tParticle=0;
+    scoreEl.textContent="0";
+    livesEl.textContent=lives;
+    bestEl.textContent=best;
+    speedEl.textContent="1.0x";
+    player.vy=0; player.onGround=true;
+  }
+
+  function startGame(){
+    setName(nameInput.value || getName());
+    reset();
+    running=true;
+    paused=false;
+    startOverlay.classList.add("hidden");
+    overOverlay.classList.add("hidden");
+    beep(660, 0.06);
+  }
+
+  function endGame(){
+    running=false; paused=false;
+    if (score > best){
+      best = score;
+      localStorage.setItem("pepe_perle_best_v3", String(best));
+      bestEl.textContent = best;
+    }
+
+    // achievements
+    for (const a of ACH_LIST){
+      if (!hasAch(a.id) && a.check(best)) unlockAch(a.id, a.title);
+    }
+
+    // daily challenge
+    const ch = getDaily();
+    if (!dailyDone() && ch.type === "score" && score >= ch.target){
+      markDailyDone();
+      showToast("Daily Challenge Complete!");
+    }
+
+    finalScoreEl.textContent = score;
+    overMsgEl.textContent =
+      ["Bug won 😭","Patch it & retry 😤","Close one. Again!"][Math.floor(Math.random()*3)];
+    overOverlay.classList.remove("hidden");
+    beep(220, 0.08);
+  }
+
+  function jump(){
+    if (!running || paused) return;
+    if (!player.onGround) return;
+    player.vy=-14.5;
+    player.onGround=false;
+    beep(520, 0.05);
+  }
+
+  function spawnBug(groundY){
+    bugs.push({ x: canvas.clientWidth+60, y: groundY+20, w:56, h:56 });
+  }
+  function spawnCoin(groundY){
+    coins.push({ x: canvas.clientWidth+40, y: groundY-rand(70,130), w:34, h:34 });
+  }
+
+  function spawnParticle(){
+    particles.push({ x: canvas.clientWidth+10, y: rand(30, canvas.clientHeight-120), r: rand(1.2,2.6), vx: rand(1.0,2.4), a: rand(0.10,0.22) });
+  }
+
+  function drawGround(groundY, cw, ch){
+    ctx.save();
+    ctx.fillStyle="rgba(255,255,255,0.04)";
+    ctx.fillRect(0, groundY+70, cw, ch-(groundY+70));
+    ctx.strokeStyle="rgba(124,247,198,0.35)";
+    ctx.lineWidth=2;
+    ctx.beginPath();
+    ctx.moveTo(0, groundY+70);
+    ctx.lineTo(cw, groundY+70);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  // Buttons
+  startBtn.addEventListener("click", ()=> startOverlay.classList.remove("hidden"));
+  playBtn.addEventListener("click", startGame);
+  retryBtn.addEventListener("click", startGame);
+
+  const shareBtnHandler = ()=> copyToClipboard(`I scored ${score} in Pepe Perle Labs Game 🐸🪙\nPerle coins collected. Bugs dodged. Still shipping 😤\n@PerleLabs #PerleLabs #OnchainBuilders`);
+  shareBtn.addEventListener("click", shareBtnHandler);
+  shareBtnTop.addEventListener("click", shareBtnHandler);
+
+  const launchPost =
+`I just launched a mini game: Pepe Perle Labs Game 🐸🪙
+Collect Perle coins, dodge bugs, ship faster 😤
+
+Try it and drop your score 👇
+@PerleLabs #PerleLabs #OnchainBuilders`;
+
+  copyLaunchBtn.addEventListener("click", ()=> copyToClipboard(launchPost));
+
+  // Controls
+  window.addEventListener("keydown", (e)=>{
+    if (e.code==="Space" || e.code==="ArrowUp"){ e.preventDefault(); jump(); }
+    if (e.code==="KeyP") paused=!paused;
+  });
+  canvas.addEventListener("mousedown", jump);
+  canvas.addEventListener("touchstart", (e)=>{ e.preventDefault(); jump(); }, { passive:false });
+
+  jumpBtn.addEventListener("click", jump);
+  pauseBtn.addEventListener("click", ()=>{
+    if (!running) return;
+    paused=!paused;
+    pauseBtn.textContent = paused ? "▶" : "⏸";
+  });
+
+  // Init
+  nameInput.value = getName();
+  playerNameHud.textContent = getName();
+  bestEl.textContent = best;
+
+  // Start on Home by default
+  showPage("home");
+
+  // Loop
+  function loop(now){
+    const dt = Math.min(0.033, (now-lastTime)/1000);
+    lastTime = now;
+
+    const dpr = Math.max(1, window.devicePixelRatio || 1);
+    canvas.width = Math.floor(canvas.clientWidth * dpr);
+    canvas.height = Math.floor(canvas.clientHeight * dpr);
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    const cw = canvas.clientWidth;
+    const ch = canvas.clientHeight;
+    const groundY = ch - 110;
+
+    ctx.clearRect(0,0,cw,ch);
+
+    // particles
+    tParticle += dt;
+    if (tParticle > 0.08){
+      tParticle = 0;
+      spawnParticle();
+    }
+    ctx.save();
+    for (let i=particles.length-1; i>=0; i--){
+      const p=particles[i];
+      p.x -= p.vx*60*dt;
+      ctx.globalAlpha=p.a;
+      ctx.fillStyle="rgba(124,247,198,1)";
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+      ctx.fill();
+      if (p.x < -20) particles.splice(i,1);
+    }
+    ctx.restore();
+
+    drawGround(groundY, cw, ch);
+
+    if (player.y === 0) player.y = groundY;
+    ctx.drawImage(pepeImg, player.x, player.y, player.w, player.h);
+
+    if (!running || paused){
+      requestAnimationFrame(loop);
+      return;
+    }
+
+    // speed scaling
+    const speedMult = 1 + Math.min(1.5, score / 100);
+    const currentSpeed = 6.0 * speedMult;
+    speedEl.textContent = (currentSpeed / 6.0).toFixed(1) + "x";
+
+    // physics
+    player.vy += 34 * dt;
+    player.y += player.vy;
+    if (player.y >= groundY){
+      player.y = groundY;
+      player.vy = 0;
+      player.onGround = true;
+    }
+
+    // spawn
+    tBug += dt;
+    tCoin += dt;
+
+    const bugEvery = Math.max(0.55, 1.25 - score * 0.01);
+    if (tBug > bugEvery){ tBug=0; spawnBug(groundY); }
+    if (tCoin > 0.85){ tCoin=0; spawnCoin(groundY); }
+
+    // coins
+    for (let i=coins.length-1; i>=0; i--){
+      const c=coins[i];
+      c.x -= currentSpeed*60*dt;
+      ctx.drawImage(perleImg, c.x, c.y, c.w, c.h);
+
+      const coinHit = { x:c.x-8, y:c.y-8, w:c.w+16, h:c.h+16 };
+      if (rectHit(player, coinHit)){
+        coins.splice(i,1);
+        score += 10;
+        scoreEl.textContent = score;
+        beep(740, 0.04);
+      }
+      if (c.x + c.w < -60) coins.splice(i,1);
+    }
+
+    // bugs
+    for (let i=bugs.length-1; i>=0; i--){
+      const b=bugs[i];
+      b.x -= currentSpeed*60*dt;
+      ctx.drawImage(bugImg, b.x, b.y, b.w, b.h);
+
+      if (hitPlayerWithBug(player, b)){
+        lives -= 1;
+        livesEl.textContent = lives;
+        bugs.splice(i,1);
+        beep(180, 0.08);
+
+        if (navigator.vibrate) navigator.vibrate(60);
+
+        if (lives <= 0){
+          endGame();
+          break;
+        }
+      }
+      if (b.x + b.w < -80) bugs.splice(i,1);
+    }
+
+    requestAnimationFrame(loop);
+  }
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
